@@ -303,7 +303,7 @@ export class FeatureLayer3 {
       // 水体面只做淡淡着色，避免掩盖卫星影像；专题面保持可辨识
       const fillOpacity: Partial<Record<Cat, number>> = {
         ocean: 0.10, bay: 0.13, gulf: 0.15, lake: 0.20,
-        basin: 0.28, subbasin: 0.26, climate: 0.26, biome: 0.26, swamp: 0.3,
+        basin: 0.14, subbasin: 0.12, climate: 0.18, biome: 0.18, swamp: 0.22,
       }
       const fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
         color: 0xffffff, vertexColors: true,

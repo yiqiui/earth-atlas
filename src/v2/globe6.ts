@@ -53,6 +53,7 @@ export class GlobeView2 {
       new THREE.SphereGeometry(EARTH_R * 1.012, 96, 64),
       new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.28, depthWrite: false }),
     )
+    this.clouds.visible = false   // 默认不叠云层，避免近景影像发白；按钮可随时开启
     this.scene.add(this.clouds)
     this.grid = this.buildGrid(); this.grid.visible = false; this.scene.add(this.grid)
     this.scene.add(this.buildStars())
