@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>地表志 · 全球自然地貌图谱</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23070a0c'/%3E%3Ccircle cx='16' cy='16' r='9.5' fill='none' stroke='%23c9a86b' stroke-width='1.2'/%3E%3C/svg%3E">
+<style>
+:root{--ink:#05080a;--panel:rgba(9,13,15,.9);--paper:#eae3d4;--dim:#c9c2b1;--muted:#948d7b;--brass:#c9a86b;--line:rgba(201,168,107,.26);--soft:rgba(233,226,211,.11);--serif:"Noto Serif SC","Songti SC",serif;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:var(--ink);color:var(--paper);font-family:var(--sans);overflow:hidden;font-size:13px;-webkit-font-smoothing:antialiased}
+#globe{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}#globe.dragging{cursor:grabbing}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse 72% 64% at 52% 46%,transparent 42%,rgba(2,4,5,.5) 100%)}
+.brand{position:fixed;left:34px;top:26px;z-index:10;display:flex;gap:12px;pointer-events:none;align-items:flex-start}
+.brand svg{width:33px;height:33px;color:var(--brass);flex:none}
+.brand h1{font-family:var(--serif);font-weight:600;font-size:26px;margin:0;letter-spacing:.2em}
+.brand p{margin:7px 0 0;font-size:9px;letter-spacing:.18em;color:var(--muted)}
+.brand .cn{display:block;margin-top:6px;font-size:10px;letter-spacing:.2em;color:var(--dim);opacity:.75}
+.top-actions{position:fixed;right:30px;top:26px;z-index:12;display:flex;gap:7px;align-items:center}
+.lang-select{height:36px;padding:0 6px;background:rgba(9,13,15,.72);color:var(--dim);border:1px solid var(--soft);font:11px var(--sans);cursor:pointer;outline:none}
+.lang-select:hover{border-color:var(--brass);color:var(--brass)}
+.icon-btn{width:36px;height:36px;display:grid;place-items:center;cursor:pointer;background:rgba(9,13,15,.62);border:1px solid var(--soft);color:var(--dim);font-size:16px;transition:.18s}
+.icon-btn:hover{border-color:var(--line);color:var(--brass)}
+.icon-btn.active{border-color:var(--brass);color:var(--brass);background:rgba(201,168,107,.12)}
+#btn-relief.active,#btn-satellite.active{color:#e6c88c}
+.panel{background:var(--panel);border:1px solid var(--soft);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 18px 50px rgba(0,0,0,.4)}
+#left-panel{position:fixed;left:34px;top:128px;z-index:10;width:250px;padding:14px}
+.search-wrap{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding-bottom:9px}
+.search-icon{color:var(--brass);font-size:18px}
+#search{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--paper);font:inherit}
+#search::placeholder{color:var(--muted)}
+.search-results{max-height:230px;overflow:auto;margin-top:8px;border:1px solid var(--soft)}
+.search-results button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--soft);color:var(--paper);padding:7px 9px;cursor:pointer;font:inherit}
+.search-results button:hover{background:rgba(201,168,107,.12)}
+.search-results small{color:var(--muted);float:right}
+.panel-title{margin:15px 0 8px;font-size:9.5px;letter-spacing:.16em;color:var(--brass);text-transform:uppercase;display:flex;justify-content:space-between}
+.layers{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.layer-item{display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px 6px;border:1px solid transparent;color:var(--dim);font-size:11.5px;user-select:none}
+.layer-item:hover{border-color:var(--soft)}
+.layer-item input{accent-color:var(--brass);margin:0}
+.layer-item .swatch{width:8px;height:8px;border-radius:50%;flex:none}
+.slider-row{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:11px}
+.slider-row input{flex:1;accent-color:var(--brass)}
+.legend{margin-top:11px;display:flex;flex-wrap:wrap;gap:5px 12px;font-size:10px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
+.teaching-note{margin-top:9px;font-size:9.5px;line-height:1.5;color:var(--muted);opacity:.85}
+.detail{position:fixed;right:30px;top:84px;z-index:11;width:290px;max-height:calc(100vh - 150px);overflow:auto;padding:18px}
+.detail h2{font-family:var(--serif);font-size:19px;margin:0;font-weight:600}
+.detail .en{font-size:10px;color:var(--muted);margin-top:2px}
+.detail .cat{display:inline-block;margin:10px 0;padding:2px 8px;border:1px solid var(--line);color:var(--brass);font-size:10px}
+.detail p{color:var(--dim);line-height:1.7;font-size:12px}
+.detail dl{margin:10px 0 0;display:grid;grid-template-columns:56px 1fr;gap:6px 8px;font-size:11.5px}
+.detail dt{color:var(--muted)}.detail dd{margin:0}
+.detail .close{float:right;cursor:pointer;color:var(--muted);border:0;background:none;font-size:16px}
+.labels{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.label3{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;font-family:var(--serif);font-size:11px;color:var(--paper);text-shadow:0 1px 4px #000,0 0 8px #000;letter-spacing:.06em}
+.label3.range{color:#e6c88c;font-size:11.5px}.label3.river{color:#9fe0f0}.label3.ocean{color:#bfe4ee;font-size:12px;letter-spacing:.28em;opacity:.6}
+.label3.bay,.label3.gulf,.label3.strait{color:#b9dfe8;font-size:10.5px}.label3.island{color:#d6dfb8}
+.tooltip{position:fixed;z-index:20;pointer-events:none;background:rgba(6,9,11,.94);border:1px solid var(--line);padding:6px 9px;font-size:11.5px}
+.tooltip small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.status-bar{position:fixed;left:0;right:0;bottom:0;z-index:10;height:28px;display:flex;align-items:center;gap:18px;padding:0 30px;background:linear-gradient(0deg,rgba(3,5,6,.92),rgba(3,5,6,.5));border-top:1px solid var(--soft);font-size:9.5px;color:var(--muted)}
+.status-bar .credit{margin-left:auto}
+.toast{position:fixed;left:50%;bottom:46px;transform:translateX(-50%);z-index:30;background:rgba(9,13,15,.96);border:1px solid var(--line);padding:9px 16px;font-size:12px}
+@media(max-width:860px){.brand{left:16px;top:16px}.top-actions{right:16px;top:16px}#left-panel{left:16px;top:108px;width:205px}.detail{right:16px;top:70px;width:240px}.status-bar{padding:0 14px}.status-bar .credit,.status-bar #status-coord{display:none}}
+</style>
+</head>
+<body>
+<canvas id="globe" aria-label="三维地球自然地貌图"></canvas>
+<div class="vignette"></div>
+<header class="brand">
+<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="9.5" fill="none" stroke="currentColor" stroke-width="1.2"/><ellipse cx="16" cy="16" rx="4" ry="9.5" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M6.5 16h19M8 11h16M8 21h16" stroke="currentColor" stroke-width=".7" opacity=".7"/></svg>
+<div><h1>地表志</h1><p>GLOBAL LANDFORM ATLAS · 3D</p><span class="cn">山川 · 河流 · 湖泊 · 海洋 · 陆地 · 岛屿</span></div>
+</header>
+<div class="top-actions">
+<select id="lang-select" class="lang-select" aria-label="Language"></select>
+<button class="icon-btn active" id="btn-relief" title="地形浮雕">⛰</button>
+<button class="icon-btn" id="btn-satellite" title="卫星影像">🛰</button>
+<button class="icon-btn active" id="btn-tiles" title="在线高清瓦片（关闭则用离线静态影像）" aria-pressed="true">🌐</button>
+<button class="icon-btn" id="btn-clouds" title="云层" aria-pressed="false">☁</button>
+<button class="icon-btn" id="btn-grid" title="经纬网" aria-pressed="false">⌗</button>
+<button class="icon-btn" id="btn-reset" title="重置视角">⟲</button>
+</div>
+<aside class="panel" id="left-panel">
+<label class="search-wrap"><span class="search-icon">⌕</span><input id="search" type="search" autocomplete="off"/></label>
+<div id="search-results" class="search-results" hidden></div>
+<div class="panel-title"><span id="layers-title">地貌图层</span><span id="feature-count">—</span></div>
+<div id="layers" class="layers"></div>
+<div class="panel-title" id="view-title">视图</div>
+<label class="slider-row"><span id="exagg-label">地形起伏</span><input id="exagg" type="range" min="0" max="8" step="0.5" value="0"/><span id="exagg-val">0×</span></label>
+<div class="legend" id="legend"></div>
+</aside>
+<aside class="panel detail" id="detail" hidden></aside>
+<div id="labels" class="labels"></div>
+<div id="tooltip" class="tooltip" hidden></div>
+<footer class="status-bar">
+<span id="status-source">来源：静态底图</span><span id="status-online">在线：待命</span>
+<span id="status-count">— 个要素</span><span id="status-coord">—</span>
+<span class="credit">Natural Earth · OpenStreetMap · Terrarium DEM</span>
+</footer>
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="/src/v2/main8.ts"></script>
+</body>
+</html>
